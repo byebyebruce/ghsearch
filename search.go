@@ -122,7 +122,7 @@ type SearchRepoResultItems struct {
 	} `json:"license"`
 }
 
-// SearchRepo 搜索
+// SearchRepo search repositories
 // https://docs.github.com/cn/rest/search#search-repositories
 /*
 	curl \
@@ -244,7 +244,7 @@ type SearchCodeResultItems struct {
 	Score float32 `json:"score"`
 }
 
-// SearchCode 搜索
+// SearchCode search code
 // https://docs.github.com/cn/rest/search#search-code
 /*
 	curl \

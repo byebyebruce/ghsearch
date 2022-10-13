@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/byebyebruce/ghsearch"
+	"github.com/byebyebruce/ghsearch/util"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -36,7 +37,9 @@ func main() {
 				return fmt.Errorf("token is emtpy. please set env GITHUB_TOKEN or use --token=xx")
 			}
 			if !code {
-				ret, err := ghsearch.SearchRepo(token, page, lang, args...)
+				ret, err := util.AsyncTaskAndShowLoadingBar("loading", func() ([]ghsearch.SearchRepoResultItems, error) {
+					return ghsearch.SearchRepo(token, page, lang, args...)
+				})
 				if err != nil {
 					return err
 				}
@@ -56,7 +59,9 @@ func main() {
 				}
 				table.Render()
 			} else {
-				ret, err := ghsearch.SearchCode(token, page, lang, args...)
+				ret, err := util.AsyncTaskAndShowLoadingBar("loading", func() ([]ghsearch.SearchCodeResultItems, error) {
+					return ghsearch.SearchCode(token, page, lang, args...)
+				})
 				if err != nil {
 					return err
 				}
