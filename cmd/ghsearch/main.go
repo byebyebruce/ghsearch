@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/byebyebruce/ghsearch"
 	"github.com/byebyebruce/ghsearch/util"
+	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -36,6 +39,7 @@ func main() {
 			if token == "" {
 				return fmt.Errorf("token is emtpy. please set env GITHUB_TOKEN or use --token=xx")
 			}
+
 			if !code {
 				ret, err := util.AsyncTaskAndShowLoadingBar("loading", func() ([]ghsearch.SearchRepoResultItems, error) {
 					return ghsearch.SearchRepo(token, page, lang, args...)
@@ -43,21 +47,63 @@ func main() {
 				if err != nil {
 					return err
 				}
-				table := tablewriter.NewWriter(cmd.OutOrStdout())
-				table.SetHeader([]string{"#", "repo", "star", "last push", "Description"})
+				var (
+					link []string
+					bf   = &bytes.Buffer{}
+				)
+				table := tablewriter.NewWriter(bf)
+				//table.SetHeader([]string{"#", "repo", "star", "last push", "Description"})
 				table.SetBorder(false) // Set Border to false
 				table.SetAutoWrapText(false)
 
 				for i, v := range ret {
 					updateAt := v.PushedAt.Format("2006-01-02")
 					desc := v.Description
-					const maxDesc = 32
+					const maxDesc = 16
 					if len([]rune(v.Description)) > maxDesc {
 						desc = (string)([]rune(v.Description)[:maxDesc]) + "..."
 					}
-					table.Append([]string{strconv.Itoa(i + 1) /*v.Name,*/, v.HTMLURL, strconv.Itoa(v.StargazersCount), updateAt, desc})
+					co1 := fmt.Sprintf("%2d ⭐%-6d %s", i+1, v.StargazersCount, v.HTMLURL)
+					table.Append([]string{co1, updateAt, desc})
+					link = append(link, v.HTMLURL)
 				}
 				table.Render()
+
+				// read line
+				reader := bufio.NewReader(bf)
+				it := []string{}
+				for {
+					l, _, err := reader.ReadLine()
+					if err != nil {
+						break
+					}
+					it = append(it, string(l))
+				}
+
+				// show result
+				prompt := promptui.Select{
+					Label: append([]string{"lang:" + lang}, args...), //fmt.Sprintf("search %s %s", args...),
+					Size:  20,
+					Items: it,
+				}
+
+				// select to open
+				var (
+					selectIdx int
+					scrollPos int
+				)
+				for {
+					i, _, err := prompt.RunCursorAt(selectIdx, scrollPos)
+					if err != nil {
+						break
+					}
+					link := link[i]
+					fmt.Println("open", link)
+					util.OpenWebBrowser(link)
+					selectIdx = prompt.ScrollPosition()
+					selectIdx = i
+				}
+
 			} else {
 				ret, err := util.AsyncTaskAndShowLoadingBar("loading", func() ([]ghsearch.SearchCodeResultItems, error) {
 					return ghsearch.SearchCode(token, page, lang, args...)
@@ -66,12 +112,26 @@ func main() {
 					return err
 				}
 				table := tablewriter.NewWriter(cmd.OutOrStdout())
-				table.SetHeader([]string{"#", "file", "url"})
+				//table.SetHeader([]string{"#", "file", "url"})
 				table.SetBorder(false) // Set Border to false
 				table.SetAutoWrapText(false)
 
+				const replaceToken = "blob/"
 				for i, v := range ret {
-					table.Append([]string{strconv.Itoa(i + 1), v.Name, v.HTMLURL})
+					_ = i
+					url := v.HTMLURL
+					/*
+						//table.Append([]string{strconv.Itoa(i + 1), v.Name, v.HTMLURL})
+						idx := strings.Index(v.HTMLURL, replaceToken)
+						if idx != -1 {
+							last := strings.Index(v.HTMLURL[idx+len(replaceToken):], "/")
+							if last != -1 {
+								url = v.HTMLURL[:idx] + "..." + v.HTMLURL[idx+len(replaceToken)+last:]
+							}
+						}
+					*/
+					table.Append([]string{strconv.Itoa(i + 1), url})
+					//link = append(link, v.HTMLURL)
 				}
 				table.Render()
 			}
