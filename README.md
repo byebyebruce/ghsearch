@@ -6,7 +6,7 @@ Search repositories or code in github
 You need a github api token which you can get from [here](https://github.com/settings/tokens)
 
 ## Installation
-`go install -ldflags '-X main.GITHUB_TOKEN=${YOUR_API_TOKEN}' github.com/byebyebruce/ghsearch/cmd/ghsearch@latest`  
+`go install -ldflags '-X main.GITHUB_TOKEN=${YOUR_API_TOKEN}' github.com/byebyebruce/ghsearch/cmd/ghsearch@master`  
 or  
 `go install github.com/byebyebruce/ghsearch/cmd/ghsearch@latest`  
 
@@ -23,7 +23,7 @@ Show github trending
 ![](./doc/pic/ghtrend.jpg)
 
 ## Installation
-`go install github.com/byebyebruce/ghsearch/cmd/ghtrend@latest`
+`go install github.com/byebyebruce/ghsearch/cmd/ghtrend@master`
 
 ## Usage
 - show: `ghtrend`  
