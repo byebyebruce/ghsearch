@@ -1,22 +1,31 @@
 # ghsearch
-> search repository or code in github
+Search repositories or code in github
+![](./doc/pic/ghsearchjpg.jpg)
 
-### Require
-You need a github api token where you can get from [here](https://github.com/settings/tokens)
+## Requirement
+You need a github api token which you can get from [here](https://github.com/settings/tokens)
 
-### Install
+## Installation
 `go install -ldflags '-X main.GITHUB_TOKEN=${YOUR_API_TOKEN}' github.com/byebyebruce/ghsearch/cmd/ghsearch@latest`  
 or  
 `go install github.com/byebyebruce/ghsearch/cmd/ghsearch@latest`  
 
-### Usage
+## Usage
 - search repository: `ghsearch microservice grpc`
 - search code: `ghsearch --lang=rust --code example grpc`
 - help: `ghsearch -h`
 - if you didn't build github api token into bin you should use: `GITHUB_TOKEN=xxx ghsearch microservice grpc`
 
+---
+---
 # ghtrend
-> show github trending repository
+Show github trending
+![](./doc/pic/ghtrend.jpg)
 
-### Install
+## Installation
 `go install github.com/byebyebruce/ghsearch/cmd/ghtrend@latest`
+
+## Usage
+- show: `ghtrend`  
+- help: `ghtrend -h`
+- specific your language: `ghtrend -lang=rust,java,ruby`
