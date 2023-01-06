@@ -1,17 +1,15 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"flag"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/byebyebruce/ghsearch"
 	"github.com/byebyebruce/ghsearch/util"
+	ui "github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
 	"github.com/manifoldco/promptui"
-	"github.com/olekukonko/tablewriter"
 )
 
 var (
@@ -21,11 +19,20 @@ var (
 
 func main() {
 	flag.Parse()
-	var err error
+
+	if err := ui.Init(); err != nil {
+		fmt.Println("failed to initialize termui: %v", err)
+	}
+	defer ui.Close()
+
 	for {
-		// select program language. skip selection if only one type
-		langs := strings.Split(*flagLang, ",")
-		lang := langs[0]
+		ui.Clear()
+
+		var (
+			err   error
+			langs = strings.Split(*flagLang, ",")
+			lang  = langs[0]
+		)
 		if len(langs) > 1 {
 			prompt := promptui.Select{
 				Label: "select language",
@@ -53,58 +60,93 @@ func main() {
 		})
 		if err != nil {
 			fmt.Println(err)
-			time.Sleep(time.Second * 5)
-			continue
+			return
 		}
 
-		// render data
-		bf := &bytes.Buffer{}
-		table := tablewriter.NewWriter(bf)
-		table.SetBorder(false)
-		table.SetAutoWrapText(false)
+		// list
+		l := widgets.NewList()
+		l.Title = "Trend"
 		for i, v := range ret {
-			desc := v.Desc
-			const maxDesc = 16
-			if len([]rune(v.Desc)) > maxDesc {
-				desc = (string)([]rune(v.Desc)[:maxDesc]) + "..."
-			}
-			table.Append([]string{fmt.Sprintf("%2d ⭐%-6d %s", i+1, v.Stars, v.Link), desc})
+			l.Rows = append(l.Rows, fmt.Sprintf("%2d ⭐%-6d %s/%s", i+1, v.Stars, v.Author, v.Name))
 		}
-		table.Render()
+		l.SelectedRowStyle = ui.NewStyle(ui.ColorWhite, ui.ColorCyan)
+		l.TextStyle = ui.NewStyle(ui.ColorWhite)
+		l.WrapText = false
 
-		// read line
-		reader := bufio.NewReader(bf)
-		it := []string{}
-		for {
-			l, _, err := reader.ReadLine()
-			if err != nil {
-				break
-			}
-			it = append(it, string(l))
+		// desc
+		p := widgets.NewParagraph()
+		p.Title = "Desc"
+		p.TextStyle.Fg = ui.ColorGreen
+		p.BorderStyle.Fg = ui.ColorCyan
+		showDesc := func(idx int) {
+			current := ret[idx]
+			p.Text = fmt.Sprintf(`[Project: %s](fg:white,mod:bold)
+[Author: %s](fg:red)
+[Link: %s](fg:blue)
+Desc: 
+    %s
+`, current.Name, current.Author, current.Link, current.Desc)
 		}
+		showDesc(l.SelectedRow)
 
-		// show result
-		prompt = promptui.Select{
-			Label: fmt.Sprintf("%s %s trending", lang, date),
-			Size:  20,
-			Items: it,
-		}
-
-		// select to open
-		var (
-			selectIdx int
-			scrollPos int
+		grid := ui.NewGrid()
+		termWidth, termHeight := ui.TerminalDimensions()
+		grid.SetRect(0, 0, termWidth, termHeight)
+		grid.Set(
+			ui.NewCol(0.4, l),
+			ui.NewCol(0.6, p),
 		)
+
+		ui.Render(grid)
+
+		previousKey := ""
+		uiEvents := ui.PollEvents()
+	LOOP:
 		for {
-			i, _, err := prompt.RunCursorAt(selectIdx, scrollPos)
-			if err != nil {
-				break
+			e := <-uiEvents
+			switch e.ID {
+			case "q":
+				break LOOP
+			case "<C-c>":
+				return
+			case "j", "<Down>":
+				l.ScrollDown()
+				showDesc(l.SelectedRow)
+			case "k", "<Up>":
+				l.ScrollUp()
+				showDesc(l.SelectedRow)
+			case "<C-d>":
+				l.ScrollHalfPageDown()
+			case "<C-u>":
+				l.ScrollHalfPageUp()
+			case "<C-f>":
+				l.ScrollPageDown()
+			case "<C-b>":
+				l.ScrollPageUp()
+			case "g":
+				if previousKey == "g" {
+					l.ScrollTop()
+				}
+			case "<Home>":
+				l.ScrollTop()
+			case "G", "<End>":
+				l.ScrollBottom()
+			case "<Enter>":
+				link := ret[l.SelectedRow].Link
+				util.OpenWebBrowser(link)
+			case "<Resize>":
+				payload := e.Payload.(ui.Resize)
+				grid.SetRect(0, 0, payload.Width, payload.Height)
+				ui.Clear()
 			}
-			link := ret[i].Link
-			fmt.Println("open", link)
-			util.OpenWebBrowser(link)
-			selectIdx = prompt.ScrollPosition()
-			selectIdx = i
+
+			if previousKey == "g" {
+				previousKey = ""
+			} else {
+				previousKey = e.ID
+			}
+
+			ui.Render(grid)
 		}
 	}
 }
