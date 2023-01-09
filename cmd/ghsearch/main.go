@@ -28,7 +28,7 @@ func main() {
 		code  bool // false:search repo, true:search code
 	)
 	rootCmd := &cobra.Command{
-		Use:          "ghsearch keyword...",
+		Use:          "ghsearch",
 		Short:        "github repo search",
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, osArgs []string) error {
@@ -46,24 +46,29 @@ func main() {
 			var (
 				err error
 			)
+
+			args := osArgs
 			for {
-				fmt.Println("Please input key words, split by space. Press q to exit.")
-				var words string
-				reader := bufio.NewReader(os.Stdin)
-				bytes, _, _ := reader.ReadLine()
-				words = strings.TrimSpace(string(bytes))
-				if len(words) == 0 {
-					continue
+				if len(args) == 0 {
+					fmt.Println("Please input key words, split by space. Press q to exit.")
+					var words string
+					reader := bufio.NewReader(os.Stdin)
+					bytes, _, _ := reader.ReadLine()
+					words = strings.TrimSpace(string(bytes))
+					if len(words) == 0 {
+						continue
+					}
+					if words == "q" {
+						return nil
+					}
+					args = strings.Split(words, " ")
 				}
-				if words == "q" {
-					return nil
-				}
-				args := strings.Split(words, " ")
 				if code {
 					err = searchCode(token, lang, args...)
 				} else {
 					err = searchRepo(token, lang, args...)
 				}
+				args = args[:0]
 				if err != nil {
 					return err
 				}

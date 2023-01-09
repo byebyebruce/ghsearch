@@ -1,6 +1,6 @@
 # ghsearch
 Search repositories or code in github
-![](./doc/pic/ghsearchjpg.jpg)
+![](./doc/pic/ghsearch.png)
 
 ## Requirement
 You need a github api token which you can get from [here](https://github.com/settings/tokens)
@@ -11,7 +11,7 @@ or
 `go install github.com/byebyebruce/ghsearch/cmd/ghsearch@latest`  
 
 ## Usage
-- search repository: `ghsearch microservice grpc`
+- search repo: `ghsearch microservice grpc`
 - search code: `ghsearch --lang=rust --code example grpc`
 - help: `ghsearch -h`
 - if you didn't build github api token into bin you should use: `GITHUB_TOKEN=xxx ghsearch microservice grpc`
@@ -28,7 +28,7 @@ Show github trending
 ## Usage
 - show: `ghtrend`  
 - help: `ghtrend -h`
-- specific your language: `ghtrend -lang=rust,java,ruby`
+- specific your language: `ghtrend -lang=rust`
 
 ## Key (vim style)
 up:`j/↑`  

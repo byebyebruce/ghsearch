@@ -54,9 +54,21 @@ func main() {
 			return
 		}
 
+		// title
+		title := widgets.NewParagraph()
+		title.Title = "Trend"
+		title.TextStyle.Fg = ui.ColorWhite
+		title.Text = fmt.Sprintf("%s:%s", lang, date)
+
+		// input
+		input := widgets.NewParagraph()
+		input.Title = fmt.Sprintf("j/k: up/down, enter: open, q: quit, ctrl+n/p: next/privious page")
+		input.TitleStyle = ui.NewStyle(ui.ColorCyan)
+		input.Border = false
+
 		// list
 		l := widgets.NewList()
-		l.Title = "Trend"
+		l.Title = "List"
 		for i, v := range ret {
 			l.Rows = append(l.Rows, fmt.Sprintf("%2d ⭐%-6d %s/%s", i+1, v.Stars, v.Author, v.Name))
 		}
@@ -88,7 +100,17 @@ Desc:
 			ui.NewCol(0.6, p),
 		)
 
-		ui.Render(grid)
+		onResize := func(w, h int) {
+			const titleOffset = 3
+			const inputOffset = 1
+			title.SetRect(0, 0, w, titleOffset)
+			grid.SetRect(0, titleOffset, w, h-inputOffset)
+			input.SetRect(0, h-inputOffset, w, h)
+		}
+
+		showDesc(l.SelectedRow)
+		onResize(termWidth, termHeight)
+		ui.Render(title, input, grid)
 
 		previousKey := ""
 		uiEvents := ui.PollEvents()
@@ -127,7 +149,7 @@ Desc:
 				util.OpenWebBrowser(link)
 			case "<Resize>":
 				payload := e.Payload.(ui.Resize)
-				grid.SetRect(0, 0, payload.Width, payload.Height)
+				onResize(payload.Width, payload.Height)
 				ui.Clear()
 			}
 
@@ -137,7 +159,7 @@ Desc:
 				previousKey = e.ID
 			}
 
-			ui.Render(grid)
+			ui.Render(title, input, grid)
 		}
 	}
 }
