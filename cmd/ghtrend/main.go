@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"strings"
 
 	"github.com/byebyebruce/ghsearch"
 	"github.com/byebyebruce/ghsearch/util"
@@ -13,36 +12,28 @@ import (
 )
 
 var (
-	flagSpokenLang = flag.String("spoken", "", "spoken language[zh/en/de/fr]. empty means any")
-	flagLang       = flag.String("lang", "go,rust,c,c++,java,c#,js", "program languages")
+	spokenLang = ""
+	lang       = ""
 )
 
 func main() {
+	flag.StringVar(&spokenLang, "spoken", "", "spoken language[zh/en/de/fr]. empty means any")
+	flag.StringVar(&lang, "lang", "go", "program languages:go,rust,c,c++,java,c#,js")
 	flag.Parse()
 
 	if err := ui.Init(); err != nil {
-		fmt.Println("failed to initialize termui: %v", err)
+		fmt.Println("failed to initialize termui", err)
+		return
 	}
+
 	defer ui.Close()
 
 	for {
 		ui.Clear()
 
 		var (
-			err   error
-			langs = strings.Split(*flagLang, ",")
-			lang  = langs[0]
+			err error
 		)
-		if len(langs) > 1 {
-			prompt := promptui.Select{
-				Label: "select language",
-				Items: langs,
-			}
-			_, lang, err = prompt.Run()
-			if err != nil {
-				return
-			}
-		}
 
 		// select date range
 		prompt := promptui.Select{
@@ -56,7 +47,7 @@ func main() {
 
 		// get data
 		ret, err := util.AsyncTaskAndShowLoadingBar("loading", func() ([]*ghsearch.Repository, error) {
-			return ghsearch.TrendingRepos(lang, date, *flagSpokenLang)
+			return ghsearch.TrendingRepos(lang, date, spokenLang)
 		})
 		if err != nil {
 			fmt.Println(err)

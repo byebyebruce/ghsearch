@@ -20,7 +20,7 @@ or
 ---
 # ghtrend
 Show github trending
-![](./doc/pic/ghtrend.jpg)
+![](./doc/pic/ghtrend.png)
 
 ## Installation
 `go install github.com/byebyebruce/ghsearch/cmd/ghtrend@master`
@@ -29,3 +29,8 @@ Show github trending
 - show: `ghtrend`  
 - help: `ghtrend -h`
 - specific your language: `ghtrend -lang=rust,java,ruby`
+
+## Key (vim style)
+up:`j/↑`  
+down: `k/↓`  
+open link: `enter`  
