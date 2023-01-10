@@ -7,7 +7,6 @@ require (
 	github.com/gizak/termui/v3 v3.1.0
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/manifoldco/promptui v0.9.0
-	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.5.0
 )
 
