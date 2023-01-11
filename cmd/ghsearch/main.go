@@ -279,7 +279,7 @@ LOOP:
 		l := widgets.NewList()
 		l.Title = "Repo"
 		for i, v := range ret {
-			l.Rows = append(l.Rows, fmt.Sprintf("%2d %s/[%s](fg:red) [%s](fg:yellow)", (page-1)*COUNT_PER_PAGE+i+1, v.Repository.Name, v.Repository.Owner.Login, v.Name))
+			l.Rows = append(l.Rows, fmt.Sprintf("%2d %s [%s](fg:yellow)", (page-1)*COUNT_PER_PAGE+i+1, v.Repository.Name, v.Name))
 		}
 		l.SelectedRowStyle = ui.NewStyle(ui.ColorWhite, ui.ColorCyan)
 		l.TextStyle = ui.NewStyle(ui.ColorWhite)
@@ -290,22 +290,31 @@ LOOP:
 		p.Title = "Desc"
 		p.TextStyle.Fg = ui.ColorGreen
 		p.BorderStyle.Fg = ui.ColorCyan
+		p.WrapText = true
 		showDesc := func(idx int) {
 			l.Title = fmt.Sprintf("Page:%d", page)
 			current := ret[idx]
-			p.Text = fmt.Sprintf(`[%s](fg:blue)
+			p.Text = fmt.Sprintf(`%s
 [Project: %s](fg:white,mod:bold)
 [Author: %s](fg:red)
+[File: %s](fg:yellow)
 [Score: %02f](fg:blue)
-Desc: %s
-`, current.HTMLURL, current.Repository.Name, current.Repository.Owner.Login, current.Score, current.Repository.Description)
+Desc:
+    %s
+`,
+				current.HTMLURL,
+				current.Repository.Name,
+				current.Repository.Owner.Login,
+				current.Path,
+				current.Score,
+				current.Repository.Description)
 		}
 
 		grid := ui.NewGrid()
 		termWidth, termHeight := ui.TerminalDimensions()
 		grid.Set(
-			ui.NewCol(0.3, l),
-			ui.NewCol(0.7, p),
+			ui.NewCol(0.4, l),
+			ui.NewCol(0.6, p),
 		)
 
 		onResize := func(w, h int) {
