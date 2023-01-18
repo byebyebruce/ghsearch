@@ -78,7 +78,7 @@ func main() {
 
 	// help
 	help := widgets.NewParagraph()
-	help.Title = fmt.Sprintf("j↑/k↓: down/up, h←/l→: tab left/regiht, enter: open, q: quit")
+	help.Title = fmt.Sprintf("j↓/k↑: down/up, h←/l→: tab left/regiht, enter: open, q: quit")
 	help.TitleStyle = ui.NewStyle(ui.ColorCyan)
 	help.Border = false
 
