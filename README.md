@@ -28,9 +28,4 @@ Show github trending
 ## Usage
 - show: `ghtrend`  
 - help: `ghtrend -h`
-- specific your language: `ghtrend -lang=rust`
-
-## Key (vim style)
-up:`j/↑`  
-down: `k/↓`  
-open link: `enter`  
+- specific your language: `ghtrend -lang=go`
